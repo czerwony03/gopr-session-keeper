@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "GOPR24 Session Keeper",
+  "version": "1.0",
+  "description": "Keeps session alive on gopr24.pl/registry-mnt/* by sending background keep-alive requests.",
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "author": "Mariusz Wroński",
+  "homepage_url": "https://redmed.dev",
+  "permissions": ["host_permissions"],
+  "host_permissions": ["https://gopr24.pl/registry-mnt/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://gopr24.pl/registry-mnt/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "logo.png",
+      "48": "logo.png"
+    },
+    "default_title": "GOPR24 Session Keeper"
+  }
+}
