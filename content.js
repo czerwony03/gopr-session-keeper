@@ -10,7 +10,9 @@ function sendKeepAliveRequest() {
     return;
   }
 
-  fetch("https://gopr24.pl/registry-mnt/child-regions", {
+  const baseUrl = location.origin;
+
+  fetch(`${baseUrl}/registry-mnt/child-regions`, {
     method: "POST",
     headers: {
       "accept": "application/json, text/javascript, */*; q=0.01",
