@@ -49,28 +49,25 @@ jobs:
 
           echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-      - name: Ensure zip is installed
+      - name: Prepare artifact directory (exclude CI and VCS files)
         run: |
-          if ! command -v zip >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y zip
-          fi
-
-      - name: Create ZIP package
-        run: |
-          mkdir -p dist
-          ZIP_NAME="gopr-session-keeper-v${VERSION}.zip"
-          # Zip repository contents excluding CI config and VCS metadata
-          zip -r "dist/$ZIP_NAME" . \
-            -x ".git/*" \
-               ".github/*" \
-               "dist/*"
+          rm -rf package
+          mkdir -p package
+          shopt -s dotglob
+          for entry in *; do
+            case "$entry" in
+              .git|.github|dist|package)
+                continue
+                ;;
+            esac
+            cp -r "$entry" package/
+          done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: gopr-session-keeper-v${{ env.VERSION }}
-          path: dist/*.zip
+          path: package/
           if-no-files-found: error
 
 
