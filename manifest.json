@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GOPR24 Session Keeper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Keeps session alive on gopr24.pl/registry-mnt/* by sending background keep-alive requests.",
   "icons": {
     "16": "logo.png",
