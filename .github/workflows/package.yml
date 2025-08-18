@@ -1,0 +1,76 @@
+name: Package Chrome Extension
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is installed
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+      - name: Bump patch version, commit and push
+        run: |
+          set -euo pipefail
+          CURRENT_VERSION=$(jq -r '.version' manifest.json)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
+            echo "Invalid version in manifest.json: $CURRENT_VERSION" >&2
+            exit 1
+          fi
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          echo "Bumping version: $CURRENT_VERSION -> $NEW_VERSION"
+          tmpfile=$(mktemp)
+          jq ".version=\"$NEW_VERSION\"" manifest.json > "$tmpfile"
+          mv "$tmpfile" manifest.json
+
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add manifest.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit." 
+          else
+            git commit -m "chore(release): v$NEW_VERSION [skip ci]"
+            git push origin HEAD:"${GITHUB_REF_NAME}"
+          fi
+
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Ensure zip is installed
+        run: |
+          if ! command -v zip >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y zip
+          fi
+
+      - name: Create ZIP package
+        run: |
+          mkdir -p dist
+          ZIP_NAME="gopr-session-keeper-v${VERSION}.zip"
+          # Zip repository contents excluding CI config and VCS metadata
+          zip -r "dist/$ZIP_NAME" . \
+            -x ".git/*" \
+               ".github/*" \
+               "dist/*"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gopr-session-keeper-v${{ env.VERSION }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+

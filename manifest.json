@@ -30,6 +30,7 @@
       "16": "logo.png",
       "48": "logo.png"
     },
-    "default_title": "GOPR24 Session Keeper"
+    "default_title": "GOPR24 Session Keeper",
+    "default_popup": "popup.html"
   }
 }
